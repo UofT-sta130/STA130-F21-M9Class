@@ -1,0 +1,269 @@
+---
+title: "Module 9 Class Activity"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+```{r, message = FALSE}
+library(tidyverse)
+group_data <- read_csv("group_data.csv")
+glimpse(group_data)
+```
+
+# Part 1
+
+## Question 1
+
+What is the best geometry to add to the code below to create an appropriate visualization for the relationship between the variables called 'x' and 'y' in the data set `group_data`?
+
+A. geom_bar()  
+**B. geom_point()** (correct)  
+C. geom_line()  
+D. geom_dot()  
+E. geom_histogram()  
+
+Add it to the code below.
+
+```{r}
+group_data %>% 
+  ggplot(aes(x, y)) +
+  # put the correct geometry (i.e. geom_something()) here +
+  geom_smooth(method = "lm", se = FALSE, formula = "y~x") +
+  theme_minimal() 
+
+# Completed
+  
+group_data %>% 
+  ggplot(aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, formula = "y~x") +
+  theme_minimal() 
+```
+
+
+## Question 2
+
+Fit the linear model that would give you the equation for the line shown in the plot above and use it to answer the following question. Note: we're not doing a training/test set split here, just use `group_data` as the data.
+
+```{r}
+# Completed
+summary(lm(y ~ x, group_data))
+```
+
+Based on the linear model you fit above, which ONE of the following conclusions is appropriate?
+
+**A) For each one-unit increase in `x` we expect `y` to decrease by 0.6 units, on average.** (correct)  
+B) For each one-unit increase in `x` we expect `y` to increase by 0.6 units, on average.  
+C) For each one-unit increase in `x` we expect `y` to increase by 9.3 units, on average.  
+D) For each one-unit increase in `y` we expect `x` to decrease by 9.3 units, on average.  
+E) For each one-unit increase in `y` we expect `x` to decrease by 0.6 units, on average.   
+
+## Question 3
+
+```{r}
+group_data %>% 
+  ggplot(aes(x, y, group = z, colour = z)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, formula = "y~x") +
+  theme_minimal() 
+
+```
+
+Based on this plot, which of the following statements is FALSE?
+
+A) Within each group, it appears that there is a positive relationship between `x` and `y`.
+B) It seems plausible that the slopes for each group may be different.
+C) It seems plausible that the intercepts for the lines for each group should be different.
+D) **As some of the observations in group 1 are very close to the line for group 2, we are likely to have concerns about the RMSE if we were to fit models to training and testing sets and compare.** (this one is false)
+
+
+## Question 4
+
+Which of the following chunks of code would fit a linear model that would give you the equations to the three lines above?
+
+A) 
+```{r}
+summary(lm(y ~ x + z, group_data))
+```
+
+**B)**   
+```{r}
+# THIS ONE IS CORRECT
+summary(lm(y ~ x * z, group_data))
+```
+
+C) 
+```{r}
+group_data %>% 
+  group_by(x) %>% 
+  lm(y ~ x, .) %>% 
+  summary()
+```
+
+D)
+```{r}
+summary(lm(y ~ z, group_data))
+```
+
+## Question 5
+
+Would you come to generally the same conclusions about the relationship between `x` and `y` from the models in questions 2 and 4? (The correct model from Q4, that is.)
+
+A) Yes, in both there appears to be a positive linear association between `x` and `y`.  
+B) Yes, in both there appears to be a negative linear association between `x` and `y`.  
+C) No, in the model from question 2 there appears to be a positive linear association but in question 4' s model there appears to be negative linear association.
+D) **No, in the model from question 2 there appears to be a negative linear association but in question 4' s model there appears to be positive linear association.** (correct)
+E) Impossible to say.  
+
+## Question 6
+
+Based on the plots and analyses you've seen in the previous questions, which ONE of the following statements seems most appropriate?
+
+A) We would be concerned about algorithmic bias because the the groups appear to be proxies.
+B) There is evidence of disclosure risk due to the strength of association between the variables.
+C) There is evidence of over-fitting.
+D) **The variable `z` appears to confound the relationship between the variables `x` and `y`.** (correct)  
+
+# Part 2
+
+Run the following chunk to load some packages for web scraping.
+```{r, message=FALSE}
+library(polite)
+library(rvest)
+```
+
+We're interested in scraping some data from the University of Toronto website. Specifically information on social media accounts.
+
+```{r, eval=FALSE}
+# run this chunk to open the website
+browseURL("https://www.utoronto.ca/social-media-directory/all")
+```
+
+In the web scraping video for this week, we talked about checking the robots.txt. We can use the `polite` package to check, from within R, whether it seems like this part of the site is allowed to be scraped, based on the robots.txt. 
+
+```{r, eval=FALSE}
+session <- bow("https://www.utoronto.ca/social-media-directory/all", 
+               user_agent = "class activity for STA130, sta130@utoronto.ca")
+
+session
+```
+
+Note 1: This chunk is currently set to `eval=FALSE` because unfortunately the output from the package has a character RStudio Cloud's LaTeX can't handle when converting to pdf. You can run this code in the notebook to look at it, no problem.
+
+Note 2: I am setting the `user_agent` to have our contact details in case the web master wanted to get in touch to tell us we were causing issues.
+
+## Question 7
+
+Using the output above or by going directly to the robots.txt, what aspect of ethical practice has U of T explicitly asked of us?
+
+A) Not to scrape any of the website at all.
+B) **Limit the rate at which we scrape the page to 10 seconds per call.** (correct)
+C) Not to crawl any pages that have more than a 10 second loading delay.
+D) No specific aspects explicitly asked of us.
+
+
+## Question 8
+
+In addition to checking the robots.txt, what else do we need to consider as ethical scrapers?
+
+A) Check the website's Terms of Use/Terms and Conditions.
+B) Check if there is an API available instead.
+C) Credit our source.
+D) Only take what we need.
+E) **All of the above.** (correct)
+
+
+Below is some code that was previously run to get the data. THIS CODE IS NOT UP TO DATE, AND IS NOT BEING ASSESSED IN STA130. You aren't responsible for understanding it, but I thought some of you might be interested. 
+
+With the crawl delay it takes a while to run, so I have just given you the data directly in a csv file.
+
+```{r, eval = FALSE}
+pages <- map(1:23, ~scrape(session, query = list(page=.x)) )
+
+social_data <- map_dfr(pages, ~html_node(.x, css = ".view-content") %>% 
+  html_text() %>% 
+  str_split(pattern = "\\n") %>% 
+  unlist() %>%
+  as_tibble() %>% 
+  mutate(value = str_trim(value)) %>% 
+  filter(value != "") %>% 
+  mutate(type = if_else(grepl("http", value), "link", "group")) %>% 
+  mutate(group_name = if_else(type == "group", value, NULL)) %>% 
+  fill(group_name) %>% 
+  filter(type == "link") %>% 
+  select(group_name, value) %>% 
+  rename(link = "value")) %>% 
+  mutate(platform = str_remove(link, "https\\:\\/\\/")) %>% 
+  mutate(platform = str_remove(platform, "http\\:\\/\\/")) %>% 
+  mutate(platform = str_remove(platform, "www\\.")) %>% 
+  mutate(platform = str_split_fixed(platform, "\\.", 2)[,1]) 
+  
+write.csv(social_data, "scraped_data.csv")
+```
+
+
+```{r}
+social_data<-read_csv("scraped_data.csv")
+```
+
+## Question 9
+
+What is the most common social media platform used by U of T schools/departments/groups etc.?
+
+A) Facebook
+B) Instagram
+C) **Twitter** (correct, see code below)
+D) LinkedIn
+E) YouTube
+
+```{r, message=FALSE}
+social_data <- read_csv("scraped_data.csv")
+
+# your code here
+
+# completed
+social_data %>% 
+  count(platform) %>% 
+  arrange(desc(n))
+```
+
+# Part 3
+
+## Question 10
+
+Suppose the Profs post a list of final STA130 grades with student names removed, but include each student's college, gender and tutorial group in the data. Which ONE of the following BEST describes the main issues with this situation? (Also, we would never do this!)
+
+A) This poses issues with informed consent if students were not told their grades would be posted before enrolling in STA130.
+B) The poses issues with algorithmic bias as people might use gender to to predict grades for future students.
+C) **This poses disclosure risk as other members of a tutorial group might be able to identify someone in their tutorial group based on gender and college.** (correct)
+D) This poses an issue for human ethics research as there is no mention of approval from the research ethics board.
+
+## Question 11
+
+Suppose when enrolling in STA130 you were randomly assigned to either a mandatory synchronous class or an asynchronous pre-recorded class and then final grades were compared between the two groups. Which ONE of the following is TRUE?
+
+A) Any differences in final grades between the groups must be due to random chance because participants were randomly assigned.
+B) **Random assignment hopefully means the two groups are comparable across potential confounding variables, like high school preparation or convenience of time zone.** (correct)
+C) The fact the students have been randomly assigned means we could use this data as a null distribution for a randomization test.
+D) As we have observed both the final grades and the group students were in, this is an example of a cross-sectional study.
+
+
+## Question 12
+
+Suppose a company wanted to understand how remote working was affecting their employees. In one of their staff surveys they had asked employees to rate their current sleep quality. 30 employees with generally poor sleep quality and 30 employees with generally excellent sleep quality were then invited to be part of a further study where they were asked whether or not they usually worked on their computer within 2 hours of their bedtime. The goal of the study was to understand if being exposed to the computer close to bedtime was associated with poor sleep quality. What kind of study is this?
+
+A) Randomized control trial.
+B) Prospective cohort study.
+C) Retrospective cohort study.
+D) Longitudinal study.
+E) **Case-control study.** (correct)
+
+## Question 13
+
+Suppose U of T is currently recruiting as study participants students graduating with one of the following degrees in 2020: Statistics Specialist, Data Science Specialist, Actuarial Science Specialist. The goal of the study is to identify what students with these degrees are earning 5 years after graduating (2025) and whether there were any differences in their incomes by program. What kind of study is this?
+
+A) Randomized control trial.
+B) **Prospective cohort study.** (correct)
+C) Retrospective cohort study.
+D) Longitudinal study.
+E) Case-control study.
